@@ -21,4 +21,19 @@ ruff check      # lint
 ```
 
 Secrets (FMP, Alpaca, OpenRouter keys) live in `.env`, which is gitignored.
-Copy `.env.example` (created in Phase 0.2) and fill in real values.
+Copy `.env.example` and fill in real values.
+
+## Docker
+
+A minimal image is provided for CI smoke checks and headless deployment to
+a Linux VM. The local venv is still the primary dev environment.
+
+```bash
+docker build -t episodic-pivot .
+docker run --rm episodic-pivot                    # runs `pytest`
+docker run --rm -it --entrypoint bash episodic-pivot
+docker run --rm --env-file .env episodic-pivot ...   # later phases
+```
+
+`.dockerignore` keeps `.env`, the venv, caches, and the planning docs out of
+the build context — secrets are never baked into the image.

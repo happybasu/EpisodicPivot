@@ -1,0 +1,50 @@
+# Keep build context lean and never bake secrets into an image.
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Git / VCS
+.git
+.gitignore
+.gitattributes
+
+# Local dev
+.venv
+venv
+env
+
+# Python caches
+__pycache__
+*.py[cod]
+.pytest_cache
+.ruff_cache
+.mypy_cache
+.coverage
+htmlcov
+
+# Editor / OS
+.vscode
+.idea
+.DS_Store
+*.swp
+*.swo
+
+# Office lockfiles and docs (not needed in the image)
+~$*
+*.docx
+
+# Project artefacts
+data/cache
+data/raw
+data/processed
+logs
+*.log
+*.parquet
+data_audit_report.md
+
+# Claude / tooling
+.claude
+CLAUDE.md
+EpisodicPivot.md
