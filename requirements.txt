@@ -1,0 +1,5 @@
+# Runtime dependencies are populated in later phases (Phase 0.2: pydantic, pyyaml;
+# Phase 1: httpx, pandas, pyarrow; Phase 7: alpaca-py; etc.).
+# For now this file installs the project itself plus the dev tools so that
+# `pip install -r requirements.txt` reproduces the Phase 0.1 verification env.
+-e .[dev]
