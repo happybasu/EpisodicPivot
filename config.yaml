@@ -1,0 +1,85 @@
+# Episodic Pivot — strategy configuration.
+#
+# Every tunable parameter lives here. No magic numbers in code (see CLAUDE.md).
+# All values default to the locked strategy table in EpisodicPivot.md §0.
+# Edit deliberately — risk parameters and hard filters are human-only.
+
+strategy:
+  # --- Scan / eligibility ---------------------------------------------------
+  # Premarket gap threshold vs prior official close. A name needs at least
+  # this much gap to land on the 9:00 AM review list (and to still be above
+  # threshold at 9:28 AM confirmation).
+  gap_threshold: 0.10               # 10 %
+
+  # ADR (Average Daily Range) lookback in trading days. ADR is computed as the
+  # mean of (High / Low) - 1 over the N days *before* the gap day — gap day
+  # is excluded so it does not inflate the stop.
+  adr_period: 20
+
+  # First-15-min volume must be at least this fraction of the 20-day average
+  # daily volume. Hard liquidity gate at the breakout window.
+  opening_volume_threshold: 0.10    # 10 %
+
+  # Opening-range length in minutes. Entry is a buy-stop just above the OR
+  # high after this many minutes elapse from the open. Allowed: 5 / 15 / 30 / 60.
+  or_length_minutes: 15
+
+  # --- Risk and sizing ------------------------------------------------------
+  # Fraction of equity risked per trade. Position size =
+  # (equity * risk_per_trade) / (entry_price - stop_price). Adjust deliberately
+  # — human-only, never auto-tuned.
+  risk_per_trade: 0.01              # 1.0 %
+
+  # Initial stop distance in ADR multiples. Stop = entry - stop_atr_multiple * ADR.
+  stop_atr_multiple: 1.0
+
+  # --- Portfolio limits -----------------------------------------------------
+  max_positions: 5                  # max concurrent open positions
+  max_new_per_day: 3                # max new entries placed in a session
+  max_per_sector: 2                 # max open positions in any single sector
+
+  # --- Exits ----------------------------------------------------------------
+  # Fraction of the position to sell on the first scaling event. After the
+  # partial fires, the remaining stop is moved to breakeven.
+  partial_fraction: 0.5             # ½
+
+  # Scale out at +N R unrealized, or on day N (whichever first).
+  profit_take_r_multiple: 2.0
+  day_backstop: 5
+
+  # Trail the runner on the SMA of this length (close below = exit remaining).
+  trail_sma_length: 10
+
+  # --- Post-approval auto-cancel --------------------------------------------
+  # If an approved name's gap falls below this threshold after 9:28 but before
+  # the breakout triggers, the pending entry is cancelled. Deterministic and
+  # removal-only — never adds new trades.
+  auto_cancel_threshold: 0.10
+
+  # --- Backtest -------------------------------------------------------------
+  # Lookback window in years for the historical backtest. Phase 0.4's data
+  # audit may reduce this if FMP intraday history does not actually reach
+  # 5 years.
+  backtest_lookback_years: 5
+
+data:
+  # Market data provider. v1 supports "fmp" only; the DataProvider abstraction
+  # allows swapping to "polygon" or "alpaca_sip" later via this single switch —
+  # no strategy code changes.
+  provider: fmp
+
+execution:
+  # Broker used by the live execution loop.
+  broker: alpaca
+
+  # Trading mode. Must remain "paper" until the go-live gate (Phase 7.5) passes:
+  # ≥ 2 months paper trading AND ≥ 30 paper trades AND paper results in line
+  # with backtest expectations. Attempting "live" before the gate raises.
+  mode: paper
+
+scoring:
+  # Optional deterministic scoring layer (Phase 5). The system trades fully
+  # without it. Set to true only after a calibration run has produced
+  # scoring_rubric.md, and even then the score is a ranking aid — never a
+  # hard filter or trade trigger.
+  enabled: false
