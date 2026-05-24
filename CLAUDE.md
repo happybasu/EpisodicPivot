@@ -49,9 +49,11 @@ Defaults that go into `config.yaml`. All tunable, but these are the starting val
 
 ## Data provider notes
 
-- **FMP Premium is the only v1 source.** Phase 0.4 includes a mandatory data audit — FMP's deep historical intraday/premarket is the known weak spot. If the audit reveals the usable intraday window is materially less than 5 years, adjust the backtest window in `config.yaml` before continuing into Phase 1.
-- Delisted tickers must be reachable (use FMP's historical-constituent + delisted-companies endpoints) to avoid survivorship bias.
-- Premarket quote: if no clean premarket print exists, fall back to the regular 9:30 open and **set a flag** indicating the fallback was used.
+- **FMP Premium is the only v1 source.** Phase 0.4 audit (in `data_audit_report.md`, gitignored) confirmed: ~16 years of daily, ~7 years of 5-min/15-min intraday, premarket available with the `extended=true` flag. `backtest_lookback_years: 5` is supported.
+- **Use `/stable/` endpoints, not `/api/v3/`.** FMP retired the legacy v3 family on **2025-08-31**; current API keys (anyone subscribing after that date) get 403 from v3. The audit script in `scripts/data_audit.py` is the reference for the path migration: daily → `/stable/historical-price-eod/full`, intraday → `/stable/historical-chart/{interval}`, news → `/stable/news/stock`, earnings → `/stable/earnings`, profile → `/stable/profile`. Symbol is always a query param (`?symbol=…`), never a path segment.
+- **Pre/after-hours bars require `extended=true`.** Without that flag, `/stable/historical-chart/*` returns regular session only (09:30–16:00 ET). The EP scanner relies on premarket data, so the `FMPProvider` must pass `extended=true` for any call that needs pre-09:30 bars.
+- **Delisted-ticker intraday gap (survivorship-bias risk).** Daily history works for delisted names, but intraday is partial — in the audit sample only 2/6 delisted symbols (BBBY, FRC) returned 5/15-min bars; SIVB, TWTR, SHOS, ZNGA returned daily only. Phase 3 backtest results must distinguish "delisted in sample with intraday" vs "delisted but missing intraday" and not silently drop the latter — flag explicitly in the trade log.
+- **Premarket quote fallback.** If no clean premarket print exists for a requested timestamp, return the regular 9:30 open and **set a flag** indicating the fallback was used.
 - Cache aggressively on disk (parquet, keyed by symbol+range) — Phase 1 mandates this.
 
 ## Build/test commands
