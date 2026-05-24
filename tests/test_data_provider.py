@@ -1,7 +1,5 @@
 """Phase 0.3 verification — the DataProvider abstraction."""
 
-from datetime import date
-
 import pytest
 
 from ep.data import FMPProvider, get_provider
@@ -36,9 +34,7 @@ def test_unknown_provider_raises():
 
 
 def test_fmp_stub_methods_raise_not_implemented():
-    """Every abstract method is stubbed; real impl lands in Phase 1."""
+    """Methods not yet implemented (Phase 1.2+) still raise NotImplementedError."""
     p = get_provider()
-    with pytest.raises(NotImplementedError):
-        p.get_universe(date(2024, 1, 2))
     with pytest.raises(NotImplementedError):
         p.get_company_profile("AAPL")

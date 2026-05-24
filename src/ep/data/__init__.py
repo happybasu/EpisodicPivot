@@ -26,5 +26,5 @@ def get_provider(config: Config | None = None) -> DataProvider:
     cfg = config or load_config()
     name = cfg.data.provider
     if name == "fmp":
-        return FMPProvider()
+        return FMPProvider(api_key=cfg.secrets.fmp_api_key)
     raise ValueError(f"Unknown data provider: {name!r}")
